@@ -175,7 +175,17 @@ function updateLabels(t) {
 
 function renderTotalAverage(rows) {
   const total = average(rows.map(r => r.rel));
-  document.getElementById("total").textContent = `${(total * 100).toFixed(1)}%`;
+  const percentage = total * 100;
+  const { r, g, b } = getColorForPercentage(percentage);
+  
+  const rVibrant = Math.min(255, Math.round(r * 1.15));
+  const gVibrant = Math.min(255, Math.round(g * 1.15));
+  const bVibrant = Math.min(255, Math.round(b * 1.15));
+  
+  const totalElement = document.getElementById("total");
+  totalElement.textContent = `${percentage.toFixed(1)}%`;
+  totalElement.style.color = `rgb(${rVibrant}, ${gVibrant}, ${bVibrant})`;
+  totalElement.style.textShadow = `0 0 30px rgba(${rVibrant}, ${gVibrant}, ${bVibrant}, 0.8), 0 0 60px rgba(${rVibrant}, ${gVibrant}, ${bVibrant}, 0.5), 0 0 90px rgba(${rVibrant}, ${gVibrant}, ${bVibrant}, 0.3)`;
 }
 
 function renderWeekdayChart(rows) {
