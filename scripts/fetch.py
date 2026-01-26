@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from pathlib import Path
 
 BASE = "https://sputnikclimbing.deporsite.net"
-DATA_FILE = Path("data/stats.json")
+DATA_FILE = Path("C:\\Users\\Jaime\\Documents\\Experimentos\\Python\\Roco_scripts\\data\\stats.json")
 
 def get_data():
     s = requests.Session()
