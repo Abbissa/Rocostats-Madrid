@@ -315,3 +315,35 @@ select:focus {
     font-size: 0.8rem;
   }
 }
+
+.evolution-chart {
+  min-height: 200px;
+}
+.evolution-chart svg {
+  width: 100%;
+  height: 200px;
+  overflow: visible;
+}
+.evolution-line {
+  fill: none;
+  stroke: #00d9ff;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.5));
+}
+.evolution-area {
+  fill: rgba(0, 217, 255, 0.1);
+  stroke: none;
+}
+.evolution-axis {
+  stroke: rgba(148, 163, 184, 0.3);
+  stroke-width: 1;
+}
+.evolution-label {
+  fill: #94a3b8;
+  font-size: 10px;
+  text-anchor: middle;
+}
+.evolution-grid {
+  stroke: rgba(148, 163, 184, 0.1);
+  stroke-dasharray: 4;
+}

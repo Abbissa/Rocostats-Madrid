@@ -7,7 +7,12 @@
     "months": "Filtrar meses",
     "title": "Estadísticas de Escalada",
     "subtitle": "Sigue las tendencias de ocupación de tu rocódromo",
-    "language": "Idioma"
+    "language": "Idioma",
+    "evolution": "Evolución",
+    "last_30_days": "Últimos 30 días",
+    "last_90_days": "Últimos 3 meses",
+    "last_180_days": "Últimos 6 meses",
+    "last_365_days": "Último año"
   },
   "en": {
     "place": "Gym",
@@ -17,7 +22,12 @@
     "months": "Filter months",
     "title": "Climbing Stats",
     "subtitle": "Track your gym's occupancy trends",
-    "language": "Language"
+    "language": "Language",
+    "evolution": "Evolution",
+    "last_30_days": "Last 30 days",
+    "last_90_days": "Last 3 months",
+    "last_180_days": "Last 6 months",
+    "last_365_days": "Last year"
   },
   "zh": {
     "place": "场馆",
@@ -27,7 +37,12 @@
     "months": "筛选月份",
     "title": "攀岩统计",
     "subtitle": "追踪您的攀岩馆占用趋势",
-    "language": "语言"
+    "language": "语言",
+    "evolution": "趋势",
+    "last_30_days": "过去30天",
+    "last_90_days": "过去3个月",
+    "last_180_days": "过去6个月",
+    "last_365_days": "过去一年"
   },
   "ja": {
     "place": "施設",
@@ -37,6 +52,11 @@
     "months": "月をフィルター",
     "title": "クライミング統計",
     "subtitle": "ジムの混雑傾向を追跡",
-    "language": "言語"
+    "language": "言語",
+    "evolution": "推移",
+    "last_30_days": "過去30日間",
+    "last_90_days": "過去3ヶ月",
+    "last_180_days": "過去6ヶ月",
+    "last_365_days": "過去1年"
   }
 }

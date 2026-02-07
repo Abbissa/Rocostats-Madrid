@@ -7,6 +7,7 @@ const PLACE_MAP = {
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const WEEKDAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const EVOLUTION_RANGES = [30, 90, 180, 365];
 
 let selectedMonths = new Set([...Array(12).keys()]);
 let stats, i18n;
@@ -39,6 +40,15 @@ function initSelectors() {
   });
   placeSel.value = 4;
   placeSel.onchange = render;
+
+  const evoRangeSel = document.getElementById("evolution-range");
+  EVOLUTION_RANGES.forEach(days => {
+    const option = document.createElement("option");
+    option.value = days;
+    evoRangeSel.appendChild(option);
+  });
+  evoRangeSel.value = EVOLUTION_RANGES[0];
+  evoRangeSel.onchange = render;
 }
 
 function initMonthSelector() {
@@ -163,6 +173,7 @@ function render() {
   renderTotalAverage(rows);
   renderWeekdayChart(rows);
   renderMonthChart(rows);
+  renderEvolutionChart(rows);
 }
 
 function updateLabels(t) {
@@ -174,6 +185,18 @@ function updateLabels(t) {
   document.getElementById("label-weekday").textContent = t.weekday;
   document.getElementById("label-month").textContent = t.month;
   document.getElementById("label-months").textContent = t.months;
+  
+  document.getElementById("label-evolution").textContent = t.evolution;
+  
+  const ranges = {};
+  EVOLUTION_RANGES.forEach(d => {
+    ranges[d] = t[`last_${d}_days`];
+  });
+  
+  const evoSel = document.getElementById("evolution-range");
+  Array.from(evoSel.options).forEach(opt => {
+    opt.textContent = ranges[opt.value];
+  });
 }
 
 function renderTotalAverage(rows) {
@@ -216,6 +239,123 @@ function renderMonthChart(rows) {
     MONTH_NAMES,
     month
   );
+}
+
+function renderEvolutionChart(rows) {
+  const container = document.getElementById("evolution-chart");
+  container.innerHTML = '';
+  
+  const days = parseInt(document.getElementById("evolution-range").value);
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  // Filter and sort data
+  const data = rows
+    .filter(r => r.date >= cutoff)
+    .sort((a, b) => a.date - b.date);
+
+  // Group by day to get daily averages
+  const dailyData = [];
+  const grouped = new Map();
+  
+  data.forEach(r => {
+    const key = r.date.toISOString().split('T')[0];
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(r.rel);
+  });
+  
+  grouped.forEach((vals, dateStr) => {
+    dailyData.push({
+      date: new Date(dateStr),
+      value: average(vals)
+    });
+  });
+  
+  dailyData.sort((a, b) => a.date - b.date);
+  
+  if (dailyData.length < 2) {
+    container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #94a3b8;">Not enough data</div>';
+    return;
+  }
+
+  // Dimensions
+  const width = container.clientWidth;
+  const height = 200;
+  const pad = { top: 20, right: 20, bottom: 30, left: 40 };
+  const graphW = width - pad.left - pad.right;
+  const graphH = height - pad.top - pad.bottom;
+  
+  // Scales
+  const minTime = dailyData[0].date.getTime();
+  const maxTime = dailyData[dailyData.length - 1].date.getTime();
+  const timeRange = maxTime - minTime;
+  
+  const x = d => pad.left + ((d.date.getTime() - minTime) / timeRange) * graphW;
+  const y = d => pad.top + graphH - (d.value * graphH); // value is 0-1
+  
+  // SVG
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  
+  // Area path
+  let pathD = `M ${pad.left} ${pad.top + graphH}`;
+  dailyData.forEach(d => {
+    pathD += ` L ${x(d)} ${y(d)}`;
+  });
+  pathD += ` L ${pad.left + graphW} ${pad.top + graphH} Z`;
+  
+  const area = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  area.setAttribute("d", pathD);
+  area.setAttribute("class", "evolution-area");
+  svg.appendChild(area);
+  
+  // Grid lines (Horizontal)
+  [0, 0.25, 0.5, 0.75, 1].forEach(tick => {
+    const yPos = pad.top + graphH - (tick * graphH);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", pad.left);
+    line.setAttribute("y1", yPos);
+    line.setAttribute("x2", pad.left + graphW);
+    line.setAttribute("y2", yPos);
+    line.setAttribute("class", "evolution-grid");
+    svg.appendChild(line);
+    
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", pad.left - 5);
+    text.setAttribute("y", yPos + 4);
+    text.setAttribute("text-anchor", "end");
+    text.setAttribute("class", "evolution-label");
+    text.textContent = `${(tick * 100).toFixed(0)}%`;
+    svg.appendChild(text);
+  });
+  
+  // Line path
+  let lineD = "";
+  dailyData.forEach((d, i) => {
+    lineD += `${i === 0 ? "M" : "L"} ${x(d)} ${y(d)}`;
+  });
+  
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  line.setAttribute("d", lineD);
+  line.setAttribute("class", "evolution-line");
+  svg.appendChild(line);
+  
+  // X Axis dates (approx 5 ticks)
+  const numTicks = 5;
+  for (let i = 0; i < numTicks; i++) {
+    const time = minTime + (timeRange * (i / (numTicks - 1)));
+    const date = new Date(time);
+    const xPos = pad.left + ((time - minTime) / timeRange) * graphW;
+    
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", xPos);
+    text.setAttribute("y", height - 10);
+    text.setAttribute("class", "evolution-label");
+    text.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    svg.appendChild(text);
+  }
+  
+  container.appendChild(svg);
 }
 
 load();
